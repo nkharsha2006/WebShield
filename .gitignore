@@ -1,0 +1,34 @@
+# Secrets and environment
+.env
+.env.*
+!.env.example
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Local databases and backups
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+backups/
+
+# Frontend dependencies and build output
+frontend/node_modules/
+frontend/dist/
+
+# Local test certificates and temporary output
+test-https/
+pytest
+tcd
+
+# Generated reports
+webshield-application-*-report.json
+
+# Local source backups
+*.bak
+*.before_*

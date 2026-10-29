@@ -1,0 +1,402 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebShield | Security Dashboard</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #0b1120;
+            --panel: #121c30;
+            --border: #263650;
+            --text: #e6edf7;
+            --muted: #93a4bd;
+            --blue: #65a9ff;
+            --green: #52d6a0;
+            --red: #ff7979;
+            --yellow: #ffd166;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        header {
+            padding: 24px 5%;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .brand { font-size: 24px; font-weight: 800; }
+        .brand span { color: var(--blue); }
+        .subtitle { color: var(--muted); font-size: 13px; margin-top: 5px; }
+
+        nav { display: flex; flex-wrap: wrap; gap: 10px; }
+
+        a {
+            color: var(--blue);
+            text-decoration: none;
+        }
+
+        nav a, .button {
+            border: 1px solid var(--border);
+            padding: 9px 13px;
+            border-radius: 8px;
+            background: var(--panel);
+            font-size: 13px;
+        }
+
+        main { padding: 28px 5%; max-width: 1500px; margin: auto; }
+
+        .section-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 24px 0 14px;
+        }
+
+        h1 { font-size: 26px; margin: 0; }
+        h2 { font-size: 17px; margin: 0; }
+        .muted { color: var(--muted); font-size: 13px; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .panel, .metric {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            padding: 19px;
+            min-width: 0;
+        }
+
+        .metric-label { color: var(--muted); font-size: 13px; }
+        .metric-value { font-size: 32px; font-weight: 750; margin-top: 9px; }
+        .blue { color: var(--blue); }
+        .green { color: var(--green); }
+        .red { color: var(--red); }
+        .yellow { color: var(--yellow); }
+
+        .columns {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .list { display: grid; gap: 11px; margin-top: 16px; }
+        .list-item {
+            padding-bottom: 11px;
+            border-bottom: 1px solid var(--border);
+            overflow-wrap: anywhere;
+        }
+        .list-item:last-child { border-bottom: 0; padding-bottom: 0; }
+        .item-title { font-weight: 650; margin-bottom: 5px; }
+        .pill {
+            display: inline-block;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 3px 8px;
+            font-size: 11px;
+            margin: 3px 3px 0 0;
+        }
+
+        .table-wrap { overflow-x: auto; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td {
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+        th { color: var(--muted); font-weight: 600; }
+        td { overflow-wrap: anywhere; }
+
+        .notice {
+            border: 1px solid var(--border);
+            background: #17253a;
+            padding: 13px 15px;
+            border-radius: 9px;
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 16px;
+        }
+
+        .error { color: var(--red); }
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 22px 5%;
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 35px;
+        }
+
+        @media (max-width: 600px) {
+            header { padding: 18px 5%; }
+            main { padding-top: 20px; }
+            h1 { font-size: 22px; }
+            .metric-value { font-size: 27px; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div>
+        <div class="brand">Web<span>Shield</span></div>
+        <div class="subtitle">Evidence-Based Web Vulnerability Verification &amp; Regression Detection</div>
+    </div>
+    <nav>
+        <a href="/docs">API Docs</a>
+        <a href="/health">Health</a>
+        <a href="/openapi.json">OpenAPI</a>
+        <a href="#" id="refreshLink">Refresh data</a>
+    </nav>
+</header>
+
+<main>
+    <div class="section-heading">
+        <div>
+            <h1>Security Overview</h1>
+            <div class="muted">Database-backed view of WebShield scan and finding records.</div>
+        </div>
+        <div class="muted" id="lastUpdated">Loading dashboard data...</div>
+    </div>
+
+    <div id="errorBox" class="notice error" hidden></div>
+
+    <section class="grid" aria-label="Scan metrics">
+        <div class="metric">
+            <div class="metric-label">Total scans</div>
+            <div class="metric-value blue" id="totalScans">—</div>
+        </div>
+        <div class="metric">
+            <div class="metric-label">Completed scans</div>
+            <div class="metric-value green" id="completedScans">—</div>
+        </div>
+        <div class="metric">
+            <div class="metric-label">Failed scans</div>
+            <div class="metric-value red" id="failedScans">—</div>
+        </div>
+        <div class="metric">
+            <div class="metric-label">Recorded findings</div>
+            <div class="metric-value yellow" id="totalFindings">—</div>
+        </div>
+        <div class="metric">
+            <div class="metric-label">Regression candidates</div>
+            <div class="metric-value red" id="regressionCount">—</div>
+        </div>
+    </section>
+
+    <section class="columns">
+        <div class="panel">
+            <h2>Findings by severity</h2>
+            <div class="list" id="severityList">
+                <div class="muted">Loading...</div>
+            </div>
+        </div>
+        <div class="panel">
+            <h2>Findings by status</h2>
+            <div class="list" id="statusList">
+                <div class="muted">Loading...</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="columns">
+        <div class="panel">
+            <h2>Recent scans</h2>
+            <div class="list" id="scanList">
+                <div class="muted">Loading...</div>
+            </div>
+        </div>
+        <div class="panel">
+            <h2>Regression candidates</h2>
+            <div class="list" id="regressionList">
+                <div class="muted">Loading...</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel" style="margin-top:16px">
+        <div class="section-heading" style="margin-top:0">
+            <h2>Recent recorded findings</h2>
+            <a href="/docs#/Findings">Findings API</a>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Finding</th>
+                        <th>Severity</th>
+                        <th>Status</th>
+                        <th>Scan</th>
+                    </tr>
+                </thead>
+                <tbody id="findingTable">
+                    <tr><td colspan="5" class="muted">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <div class="notice">
+        <strong>Interpretation note:</strong> historical finding records can repeat across scans.
+        Regression candidates need review of their scan timing and evidence; they are not automatic
+        proof of exploitability. Only assess targets you own or are authorized to test.
+    </div>
+</main>
+
+<footer>
+    WebShield research prototype · Local dashboard · <span id="footerVersion">API</span>
+</footer>
+
+<script>
+    const reportUrl = (applicationId) =>
+        `/reports/applications/${encodeURIComponent(applicationId)}`;
+
+    // Insert all API-derived strings as text, never as HTML.
+    function makeTextElement(tag, text, className = "") {
+        const element = document.createElement(tag);
+        element.textContent = text ?? "";
+        if (className) element.className = className;
+        return element;
+    }
+
+    function addPill(parent, text) {
+        parent.appendChild(makeTextElement("span", text, "pill"));
+    }
+
+    function renderCounts(targetId, counts) {
+        const target = document.getElementById(targetId);
+        target.replaceChildren();
+        const entries = Object.entries(counts || {});
+        if (!entries.length) {
+            target.appendChild(makeTextElement("div", "No records yet.", "muted"));
+            return;
+        }
+        for (const [label, count] of entries) {
+            const row = document.createElement("div");
+            row.className = "list-item";
+            row.appendChild(makeTextElement("span", label));
+            row.appendChild(makeTextElement("strong", `  ${count}`));
+            target.appendChild(row);
+        }
+    }
+
+    async function loadDashboard() {
+        const errorBox = document.getElementById("errorBox");
+        errorBox.hidden = true;
+
+        try {
+            const response = await fetch("/dashboard/data", {
+                headers: { "Accept": "application/json" },
+                cache: "no-store"
+            });
+
+            if (!response.ok) {
+                throw new Error(`Dashboard API returned HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            const summary = data.summary;
+
+            document.getElementById("totalScans").textContent = summary.total_scans;
+            document.getElementById("completedScans").textContent = summary.completed_scans;
+            document.getElementById("failedScans").textContent = summary.failed_scans;
+            document.getElementById("totalFindings").textContent = summary.total_recorded_findings;
+            document.getElementById("regressionCount").textContent = summary.regression_candidates;
+            document.getElementById("lastUpdated").textContent =
+                `Updated ${new Date(data.generated_at).toLocaleTimeString()}`;
+
+            renderCounts("severityList", summary.findings_by_severity);
+            renderCounts("statusList", summary.findings_by_status);
+
+            const scanList = document.getElementById("scanList");
+            scanList.replaceChildren();
+            if (!data.recent_scans.length) {
+                scanList.appendChild(makeTextElement("div", "No scans recorded yet.", "muted"));
+            }
+            for (const scan of data.recent_scans) {
+                const item = document.createElement("div");
+                item.className = "list-item";
+                item.appendChild(makeTextElement("div", `Scan #${scan.id}`, "item-title"));
+                addPill(item, scan.status);
+                addPill(item, scan.scanner || "unknown scanner");
+                item.appendChild(makeTextElement("div",
+                    scan.started_at ? new Date(scan.started_at).toLocaleString() : "Start time unavailable",
+                    "muted"));
+                scanList.appendChild(item);
+            }
+
+            const regressionList = document.getElementById("regressionList");
+            regressionList.replaceChildren();
+            if (!data.regressions.length) {
+                regressionList.appendChild(makeTextElement("div", "No regression candidates reported.", "muted"));
+            }
+            for (const finding of data.regressions) {
+                const item = document.createElement("div");
+                item.className = "list-item";
+                item.appendChild(makeTextElement("div", finding.title, "item-title"));
+                addPill(item, `Finding #${finding.finding_id}`);
+                addPill(item, finding.severity);
+                item.appendChild(makeTextElement("div", `Scan #${finding.scan_id}`, "muted"));
+                regressionList.appendChild(item);
+            }
+
+            const findingTable = document.getElementById("findingTable");
+            findingTable.replaceChildren();
+            if (!data.recent_findings.length) {
+                const row = document.createElement("tr");
+                const cell = makeTextElement("td", "No findings recorded yet.", "muted");
+                cell.colSpan = 5;
+                row.appendChild(cell);
+                findingTable.appendChild(row);
+            }
+            for (const finding of data.recent_findings) {
+                const row = document.createElement("tr");
+                const values = [
+                    finding.id,
+                    finding.title,
+                    finding.severity,
+                    finding.status,
+                    finding.scan_id
+                ];
+                for (const value of values) {
+                    row.appendChild(makeTextElement("td", value));
+                }
+                findingTable.appendChild(row);
+            }
+
+        } catch (error) {
+            errorBox.textContent =
+                `${error.message}. Check that the WebShield API is running and inspect /docs.`;
+            errorBox.hidden = false;
+        }
+    }
+
+    document.getElementById("refreshLink").addEventListener("click", (event) => {
+        event.preventDefault();
+        loadDashboard();
+    });
+
+    loadDashboard();
+</script>
+</body>
+</html>

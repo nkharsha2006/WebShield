@@ -1,0 +1,615 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WebShield | Finding Details</title>
+
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #0b1120;
+            --panel: #121c30;
+            --border: #263650;
+            --text: #e6edf7;
+            --muted: #93a4bd;
+            --blue: #65a9ff;
+            --green: #52d6a0;
+            --red: #ff7979;
+            --yellow: #ffd166;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        header {
+            padding: 22px 5%;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            font-size: 25px;
+            font-weight: 800;
+        }
+
+        .brand span { color: var(--blue); }
+
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        a {
+            color: var(--blue);
+            text-decoration: none;
+        }
+
+        a:hover { text-decoration: underline; }
+
+        main {
+            max-width: 1100px;
+            margin: auto;
+            padding: 28px 5%;
+        }
+
+        h1 {
+            font-size: 26px;
+            overflow-wrap: anywhere;
+        }
+
+        h2 {
+            font-size: 18px;
+            margin-top: 0;
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 21px;
+            margin-bottom: 17px;
+            min-width: 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 16px;
+        }
+
+        .label {
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .value {
+            overflow-wrap: anywhere;
+            line-height: 1.6;
+        }
+
+        .pill {
+            display: inline-block;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 5px 10px;
+            font-size: 12px;
+            margin: 3px 5px 3px 0;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            font-family: inherit;
+            line-height: 1.65;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            margin-top: 12px;
+        }
+
+        input, select, textarea, button {
+            width: 100%;
+            margin-top: 7px;
+            padding: 11px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #0b1425;
+            color: var(--text);
+            font: inherit;
+        }
+
+        textarea {
+            min-height: 85px;
+            resize: vertical;
+        }
+
+        button {
+            margin-top: 15px;
+            background: #1b4f85;
+            border-color: #3675b9;
+            cursor: pointer;
+            font-weight: 650;
+        }
+
+        button:hover { background: #245f9d; }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .notice {
+            border: 1px solid var(--border);
+            background: #17253a;
+            padding: 13px;
+            border-radius: 9px;
+            margin-bottom: 15px;
+            overflow-wrap: anywhere;
+        }
+
+        .error { color: var(--red); }
+        .success { color: var(--green); }
+        .warning { color: var(--yellow); }
+
+        .history-item {
+            border-left: 3px solid var(--blue);
+            padding: 12px 15px;
+            margin: 12px 0;
+            background: #0d1729;
+            overflow-wrap: anywhere;
+        }
+
+        .history-item p {
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        footer {
+            color: var(--muted);
+            border-top: 1px solid var(--border);
+            padding: 20px 5%;
+            font-size: 12px;
+        }
+
+        [hidden] { display: none !important; }
+
+        @media (max-width: 600px) {
+            header { padding: 18px 5%; }
+            main { padding-top: 20px; }
+            h1 { font-size: 22px; }
+            .panel { padding: 16px; }
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    <div>
+        <div class="brand">Web<span>Shield</span></div>
+        <div class="muted">Finding details and remediation</div>
+    </div>
+
+    <nav>
+        <a href="/">Dashboard</a>
+        <a href="/docs">API documentation</a>
+    </nav>
+</header>
+
+<main>
+    <div id="message" class="notice" hidden role="status"></div>
+
+    <section class="panel">
+        <div class="muted" id="findingId">Loading finding...</div>
+        <h1 id="title">Loading...</h1>
+        <div id="badges"></div>
+
+        <div class="grid" style="margin-top: 22px;">
+            <div>
+                <div class="label">Affected URL</div>
+                <div class="value" id="affectedUrl">—</div>
+            </div>
+
+            <div>
+                <div class="label">Source</div>
+                <div class="value" id="source">—</div>
+            </div>
+
+            <div>
+                <div class="label">Original scan</div>
+                <div class="value" id="scanId">—</div>
+            </div>
+
+            <div>
+                <div class="label">First observed</div>
+                <div class="value" id="firstSeen">—</div>
+            </div>
+
+            <div>
+                <div class="label">Last observed</div>
+                <div class="value" id="lastSeen">—</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Description</h2>
+        <pre id="description">—</pre>
+
+        <h2>Evidence</h2>
+        <pre id="evidence">No evidence recorded.</pre>
+
+        <h2>Remediation guidance</h2>
+        <pre id="remediation">No remediation guidance recorded.</pre>
+    </section>
+
+    <section class="panel">
+        <h2>Update finding status</h2>
+
+        <p class="muted">
+            Use this form to track remediation progress. A finding marked
+            VERIFIED_RESOLVED can only be set through the verification workflow.
+        </p>
+
+        <form id="statusForm">
+            <label for="status">New status</label>
+            <select id="status" required>
+                <option value="OPEN">OPEN</option>
+                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                <option value="ACCEPTED">ACCEPTED</option>
+                <option value="RESOLVED">RESOLVED</option>
+                <option value="FALSE_POSITIVE">FALSE_POSITIVE</option>
+            </select>
+
+            <label for="statusNote">Note (for your reference)</label>
+            <textarea id="statusNote"
+                maxlength="2000"
+                placeholder="Describe the remediation work or reason for the status change."></textarea>
+
+            <button type="submit">Update status</button>
+        </form>
+    </section>
+
+    <section class="panel">
+        <h2>Verify remediation</h2>
+
+        <p class="muted">
+            Currently supported for findings generated by WebShield's security
+            configuration checker. Choose a completed verification scan for
+            the same registered application.
+        </p>
+
+        <div class="notice warning">
+            A missing finding in a completed scan means the checker did not
+            detect it during that scan. It is not proof that the application
+            is free of all vulnerabilities.
+        </div>
+
+        <form id="verifyForm">
+            <label for="verificationScanId">
+                Completed verification scan ID
+            </label>
+
+            <input
+                id="verificationScanId"
+                type="number"
+                min="1"
+                step="1"
+                required
+                placeholder="Example: 10"
+            >
+
+            <label for="verificationNote">Verification note (optional)</label>
+            <textarea
+                id="verificationNote"
+                maxlength="2000"
+                placeholder="Describe the change made and what you checked."
+            ></textarea>
+
+            <button type="submit">Record verification</button>
+        </form>
+    </section>
+
+    <section class="panel">
+        <h2>Verification history</h2>
+        <div id="history" class="muted">Loading verification history...</div>
+    </section>
+</main>
+
+<footer>
+    WebShield research prototype · Only test applications you own or have
+    explicit authorization to assess.
+</footer>
+
+<script>
+"use strict";
+
+const pathParts = window.location.pathname.split("/").filter(Boolean);
+const findingId = Number(pathParts[pathParts.length - 2]);
+
+const messageBox = document.getElementById("message");
+
+function showMessage(message, isError = false) {
+    messageBox.textContent = message;
+    messageBox.className = `notice ${isError ? "error" : "success"}`;
+    messageBox.hidden = false;
+}
+
+function setText(id, value, fallback = "Not recorded") {
+    const element = document.getElementById(id);
+
+    if (value === null || value === undefined || value === "") {
+        element.textContent = fallback;
+    } else {
+        element.textContent = String(value);
+    }
+}
+
+function formatDate(value) {
+    if (!value) return "Not recorded";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return String(value);
+    }
+
+    return date.toLocaleString();
+}
+
+function addPill(parent, text) {
+    const element = document.createElement("span");
+    element.className = "pill";
+    element.textContent = text;
+    parent.appendChild(element);
+}
+
+async function apiRequest(url, options = {}) {
+    const headers = {
+        "Accept": "application/json",
+        ...(options.body
+            ? { "Content-Type": "application/json" }
+            : {}),
+        ...(options.headers || {})
+    };
+
+    const response = await fetch(url, {
+        ...options,
+        headers,
+        cache: "no-store"
+    });
+
+    const responseText = await response.text();
+    let body = {};
+
+    if (responseText) {
+        try {
+            body = JSON.parse(responseText);
+        } catch {
+            body = { detail: responseText };
+        }
+    }
+
+    if (!response.ok) {
+        let detail = body.detail;
+
+        if (Array.isArray(detail)) {
+            detail = detail.map(item => item.msg || JSON.stringify(item)).join("; ");
+        }
+
+        throw new Error(
+            typeof detail === "string"
+                ? detail
+                : `Request failed with HTTP ${response.status}`
+        );
+    }
+
+    return body;
+}
+
+async function loadFinding() {
+    if (!Number.isInteger(findingId) || findingId < 1) {
+        throw new Error("Invalid finding ID in the page URL.");
+    }
+
+    const finding = await apiRequest(`/findings/${findingId}`);
+
+    setText("findingId", `Finding #${finding.id}`);
+    setText("title", finding.title);
+    setText("affectedUrl", finding.affected_url);
+    setText("source", finding.source);
+    setText("scanId", finding.scan_id);
+    setText("description", finding.description);
+    setText("evidence", finding.evidence, "No evidence recorded.");
+    setText("remediation", finding.remediation, "No remediation guidance recorded.");
+    setText("firstSeen", formatDate(finding.first_seen_at));
+    setText("lastSeen", formatDate(finding.last_seen_at));
+
+    const badges = document.getElementById("badges");
+    badges.replaceChildren();
+
+    addPill(badges, `Severity: ${finding.severity}`);
+    addPill(badges, `Status: ${finding.status}`);
+
+    const statusSelect = document.getElementById("status");
+
+    if (finding.status === "VERIFIED_RESOLVED") {
+        statusSelect.value = "OPEN";
+    } else {
+        statusSelect.value = finding.status;
+    }
+
+    // Verification is currently restricted by the backend to
+    // security-header checker findings.
+    const supported =
+        finding.source === "webshield-security-checker";
+
+    document.getElementById("verifyForm").hidden = !supported;
+
+    if (!supported) {
+        const note = document.createElement("p");
+        note.className = "muted";
+        note.textContent =
+            "Verification is not available for this finding source yet.";
+        document.getElementById("verifyForm").replaceWith(note);
+    }
+}
+
+async function loadHistory() {
+    const history = document.getElementById("history");
+    history.replaceChildren();
+
+    const attempts = await apiRequest(
+        `/findings/${findingId}/verifications`
+    );
+
+    if (!attempts.length) {
+        history.textContent = "No verification attempts recorded yet.";
+        return;
+    }
+
+    for (const attempt of attempts) {
+        const item = document.createElement("div");
+        item.className = "history-item";
+
+        const heading = document.createElement("strong");
+        heading.textContent =
+            `${attempt.outcome} · Verification scan #${attempt.verification_scan_id}`;
+        item.appendChild(heading);
+
+        const date = document.createElement("div");
+        date.className = "muted";
+        date.textContent = formatDate(attempt.verified_at);
+        item.appendChild(date);
+
+        const evidence = document.createElement("p");
+        evidence.textContent = attempt.evidence || "No evidence recorded.";
+        item.appendChild(evidence);
+
+        if (attempt.note) {
+            const note = document.createElement("p");
+            note.textContent = `Note: ${attempt.note}`;
+            item.appendChild(note);
+        }
+
+        history.appendChild(item);
+    }
+}
+
+document.getElementById("statusForm").addEventListener(
+    "submit",
+    async event => {
+        event.preventDefault();
+
+        const button = event.submitter;
+        button.disabled = true;
+
+        try {
+            const status = document.getElementById("status").value;
+
+            // The current status endpoint accepts status and ignores
+            // the optional note; keep the request compatible with its schema.
+            await apiRequest(`/findings/${findingId}/status`, {
+                method: "PATCH",
+                body: JSON.stringify({ status })
+            });
+
+            showMessage("Finding status updated successfully.");
+            await loadFinding();
+            await loadHistory();
+        } catch (error) {
+            showMessage(error.message, true);
+        } finally {
+            button.disabled = false;
+        }
+    }
+);
+
+document.getElementById("verifyForm").addEventListener(
+    "submit",
+    async event => {
+        event.preventDefault();
+
+        const button = event.submitter;
+        button.disabled = true;
+
+        try {
+            const verificationScanId = Number(
+                document.getElementById("verificationScanId").value
+            );
+
+            const note = document.getElementById("verificationNote")
+                .value.trim();
+
+            if (
+                !Number.isInteger(verificationScanId) ||
+                verificationScanId < 1
+            ) {
+                throw new Error(
+                    "Enter a valid positive verification scan ID."
+                );
+            }
+
+            // VerificationCreate requires outcome and evidence.
+            // These are schema-compatible placeholders; the existing
+            // backend derives and stores the actual outcome and evidence.
+            await apiRequest(`/findings/${findingId}/verify`, {
+                method: "POST",
+                body: JSON.stringify({
+                    verification_scan_id: verificationScanId,
+                    outcome: "INCONCLUSIVE",
+                    evidence:
+                        "Verification initiated from the WebShield finding details page. The server derives the actual outcome from the completed verification scan.",
+                    note: note || null
+                })
+            });
+
+            showMessage("Verification attempt recorded.");
+            await loadFinding();
+            await loadHistory();
+        } catch (error) {
+            showMessage(error.message, true);
+        } finally {
+            button.disabled = false;
+        }
+    }
+);
+
+async function initializePage() {
+    try {
+        await loadFinding();
+        await loadHistory();
+    } catch (error) {
+        showMessage(error.message, true);
+        setText("title", "Unable to load finding");
+        document.getElementById("history").textContent =
+            "Verification history could not be loaded.";
+    }
+}
+
+initializePage();
+</script>
+</body>
+</html>
+
